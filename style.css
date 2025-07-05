@@ -1,0 +1,94 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif; /* Futuristic font */
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-canvas {
+    display: block;
+    background-color: #000; /* Fallback */
+}
+
+#ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allow clicks to pass through to the canvas */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Distribute UI elements */
+    align-items: flex-start;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#score {
+    font-size: 2.5em;
+    text-shadow: 0 0 10px #00FFFF, 0 0 20px #00FFFF; /* Neon glow */
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+#game-over-screen {
+    pointer-events: all; /* Enable clicks on the game over screen */
+    background-color: rgba(0, 0, 0, 0.85);
+    padding: 50px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.7), 0 0 60px rgba(0, 255, 255, 0.4); /* Stronger neon glow */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 500px;
+}
+
+#game-over-screen h2 {
+    font-size: 4em;
+    margin-bottom: 20px;
+    color: #FFD700; /* Gold */
+    text-shadow: 0 0 15px #FFD700;
+}
+
+#game-over-screen p {
+    font-size: 1.8em;
+    margin-bottom: 40px;
+    color: #00FFFF;
+}
+
+#restart-button {
+    padding: 18px 40px;
+    font-size: 1.5em;
+    cursor: pointer;
+    border: 3px solid #FF0000; /* Red border */
+    border-radius: 15px;
+    background-color: #8A2BE2; /* Blue Violet */
+    color: white;
+    text-shadow: 0 0 8px white;
+    box-shadow: 0 0 15px #8A2BE2;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+#restart-button:hover {
+    background-color: #9932CC; /* Darker purple */
+    box-shadow: 0 0 25px #9932CC;
+}
