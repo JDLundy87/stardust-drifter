@@ -8,16 +8,18 @@ const restartButton = document.getElementById('restart-button');
 
 let canvasWidth, canvasHeight;
 
-let player, planets, stars, score, isGameOver, currentLevel, gamePausedForTransition, gameStarted;
+let player, planets, stars, score, isGameOver, currentLevel, gamePausedForTransition, gameStarted, comets, collectableStars;
 
 // Game settings
 const PLAYER_SPEED = 4;
 const PLANET_MIN_RADIUS = 20;
 const PLANET_MAX_RADIUS = 50;
 const GRAVITY = 0.5; // Even more subtle gravity
+const COMET_START_LEVEL = 3;
+const STAR_SPAWN_RATE = 0.01; // Chance of a star spawning each frame
 
 const LEVEL_TRANSITION_DELAY = 2000; // 2 seconds
-const BASE_PLANET_COUNT = 5;
+const BASE_PLANET_COUNT = 3;
 const PLANET_COUNT_PER_LEVEL = 2;
 const BASE_SCORE_THRESHOLD = 1000;
 const SCORE_THRESHOLD_MULTIPLIER = 1.5;
@@ -51,6 +53,8 @@ function init() {
 
     planets = [];
     stars = [];
+    comets = [];
+    collectableStars = [];
 
     // Generate stars (static for now)
     for (let i = 0; i < 100; i++) {
@@ -75,9 +79,54 @@ function startLevel() {
 
     generatePlanetsForLevel();
 
+    if (currentLevel >= COMET_START_LEVEL) {
+        generateComet();
+    }
+
     setTimeout(() => {
         gamePausedForTransition = false;
     }, LEVEL_TRANSITION_DELAY);
+}
+
+function generateComet() {
+    let x, y, dx, dy;
+    const speed = 2;
+    const edge = Math.floor(Math.random() * 4);
+
+    switch (edge) {
+        case 0: // Top edge
+            x = Math.random() * canvasWidth;
+            y = 0;
+            dx = (Math.random() - 0.5) * speed;
+            dy = Math.random() * speed;
+            break;
+        case 1: // Right edge
+            x = canvasWidth;
+            y = Math.random() * canvasHeight;
+            dx = -Math.random() * speed;
+            dy = (Math.random() - 0.5) * speed;
+            break;
+        case 2: // Bottom edge
+            x = Math.random() * canvasWidth;
+            y = canvasHeight;
+            dx = (Math.random() - 0.5) * speed;
+            dy = -Math.random() * speed;
+            break;
+        case 3: // Left edge
+            x = 0;
+            y = Math.random() * canvasHeight;
+            dx = Math.random() * speed;
+            dy = (Math.random() - 0.5) * speed;
+            break;
+    }
+
+    comets.push({
+        x: x,
+        y: y,
+        dx: dx,
+        dy: dy,
+        radius: 15
+    });
 }
 
 function generatePlanetsForLevel() {
@@ -176,6 +225,50 @@ function update() {
         }
     });
 
+    // Spawn collectable stars
+    if (Math.random() < STAR_SPAWN_RATE) {
+        collectableStars.push({
+            x: Math.random() * canvasWidth,
+            y: Math.random() * canvasHeight,
+            radius: 10
+        });
+    }
+
+    // Move comets
+    comets.forEach((c, index) => {
+        c.x += c.dx;
+        c.y += c.dy;
+
+        // Remove comet if it goes off-screen
+        if (c.x < 0 || c.x > canvasWidth || c.y < 0 || c.y > canvasHeight) {
+            comets.splice(index, 1);
+        }
+
+        // Check for collision with player
+        const distToPlayer = Math.hypot(player.x - c.x, player.y - c.y);
+        if (distToPlayer < c.radius + player.radius) {
+            gameOver();
+        }
+
+        // Check for collision with planets
+        planets.forEach(p => {
+            const distToPlanet = Math.hypot(p.x - c.x, p.y - c.y);
+            if (distToPlanet < c.radius + p.radius) {
+                gameOver();
+            }
+        });
+    });
+
+    // Check for collision with collectable stars
+    collectableStars.forEach((s, index) => {
+        const distToStar = Math.hypot(player.x - s.x, player.y - s.y);
+        if (distToStar < s.radius + player.radius) {
+            score += 100;
+            scoreEl.textContent = `Score: ${score}`;
+            collectableStars.splice(index, 1);
+        }
+    });
+
     if (player.isMoving) {
         let totalGravityX = 0;
         let totalGravityY = 0;
@@ -238,6 +331,21 @@ function draw() {
         if (planetImage) {
             ctx.drawImage(planetImage, p.x - p.radius, p.y - p.radius, p.radius * 2, p.radius * 2);
         }
+    });
+
+    // Draw comets
+    comets.forEach(c => {
+        ctx.drawImage(images.comet, c.x - c.radius, c.y - c.radius, c.radius * 2, c.radius * 2);
+    });
+
+    // Draw comets
+    comets.forEach(c => {
+        ctx.drawImage(images.comet, c.x - c.radius, c.y - c.radius, c.radius * 2, c.radius * 2);
+    });
+
+    // Draw collectable stars
+    collectableStars.forEach(s => {
+        ctx.drawImage(images.star, s.x - s.radius, s.y - s.radius, s.radius * 2, s.radius * 2);
     });
 
     // Draw player

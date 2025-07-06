@@ -1,5 +1,6 @@
 const assets = {
     playerShip: 'images/player.svg',
+    comet: 'images/comet.svg',
     planets: [
         'images/planet1.svg',
         'images/planet2.svg',
@@ -24,6 +25,7 @@ function loadImages() {
     };
 
     promises.push(loadImage(assets.playerShip).then(img => images.player = img));
+    promises.push(loadImage(assets.comet).then(img => images.comet = img));
 
     const planetPromises = assets.planets.map(planetSrc => loadImage(planetSrc));
     promises.push(Promise.all(planetPromises).then(planetImgs => images.planets = planetImgs));
