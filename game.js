@@ -14,7 +14,7 @@ let player, planets, stars, score, isGameOver, currentLevel, gamePausedForTransi
 const PLAYER_SPEED = 4;
 const PLANET_MIN_RADIUS = 20;
 const PLANET_MAX_RADIUS = 50;
-const GRAVITY = 0.1;
+const GRAVITY = 0.5; // Even more subtle gravity
 
 const LEVEL_TRANSITION_DELAY = 2000; // 2 seconds
 const BASE_PLANET_COUNT = 5;
@@ -87,7 +87,9 @@ function generatePlanetsForLevel() {
         x: canvasWidth / 2,
         y: canvasHeight / 2,
         radius: 40,
-        type: Math.floor(Math.random() * images.planets.length)
+        type: Math.floor(Math.random() * images.planets.length),
+        dx: (Math.random() - 0.5) * 0.5,
+        dy: (Math.random() - 0.5) * 0.5
     });
 
     const numPlanets = BASE_PLANET_COUNT + (currentLevel - 1) * PLANET_COUNT_PER_LEVEL;
@@ -96,7 +98,9 @@ function generatePlanetsForLevel() {
             x: Math.random() * canvasWidth,
             y: Math.random() * canvasHeight,
             radius: Math.random() * (PLANET_MAX_RADIUS - PLANET_MIN_RADIUS) + PLANET_MIN_RADIUS,
-            type: Math.floor(Math.random() * images.planets.length)
+            type: Math.floor(Math.random() * images.planets.length),
+            dx: (Math.random() - 0.5) * 0.5,
+            dy: (Math.random() - 0.5) * 0.5
         });
     }
 }
@@ -158,6 +162,20 @@ function handleMouseUp(e) {
 function update() {
     if (isGameOver || gamePausedForTransition) return;
 
+    // Move planets
+    planets.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+
+        // Bounce off walls
+        if (p.x < p.radius || p.x > canvasWidth - p.radius) {
+            p.dx *= -1;
+        }
+        if (p.y < p.radius || p.y > canvasHeight - p.radius) {
+            p.dy *= -1;
+        }
+    });
+
     if (player.isMoving) {
         let totalGravityX = 0;
         let totalGravityY = 0;
@@ -166,7 +184,7 @@ function update() {
             const dx = p.x - player.x;
             const dy = p.y - player.y;
             const distSq = dx * dx + dy * dy;
-            const force = GRAVITY / distSq;
+            const force = GRAVITY * p.radius / distSq; // Force proportional to planet radius
 
             totalGravityX += dx * force;
             totalGravityY += dy * force;
