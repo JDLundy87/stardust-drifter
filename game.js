@@ -44,8 +44,247 @@ let animationFrameId;
 let isDragging = false;
 let dragStartX, dragStartY;
 
-// Game state can be: 'START', 'LEVEL_TRANSITION', 'PLAYING', 'GAME_OVER'
-let gameState; 
+// --- STATE MANAGEMENT SYSTEM ---
+
+// Game States
+const GAME_STATES = {
+    LOADING: 'LOADING',
+    START: 'START',
+    LEVEL_TRANSITION: 'LEVEL_TRANSITION', 
+    PLAYING: 'PLAYING',
+    PAUSED: 'PAUSED',
+    GAME_OVER: 'GAME_OVER'
+};
+
+// State Machine Class
+class GameStateMachine {
+    constructor() {
+        this.currentState = GAME_STATES.LOADING;
+        this.previousState = null;
+        this.stateData = {};
+        this.transitions = this.defineTransitions();
+        this.stateHandlers = this.defineStateHandlers();
+    }
+
+    defineTransitions() {
+        return {
+            [GAME_STATES.LOADING]: {
+                [GAME_STATES.START]: true
+            },
+            [GAME_STATES.START]: {
+                [GAME_STATES.PLAYING]: true,
+                [GAME_STATES.LEVEL_TRANSITION]: true
+            },
+            [GAME_STATES.LEVEL_TRANSITION]: {
+                [GAME_STATES.PLAYING]: true,
+                [GAME_STATES.START]: true // Allow restart during transition
+            },
+            [GAME_STATES.PLAYING]: {
+                [GAME_STATES.PAUSED]: true,
+                [GAME_STATES.GAME_OVER]: true,
+                [GAME_STATES.LEVEL_TRANSITION]: true,
+                [GAME_STATES.START]: true // Allow restart
+            },
+            [GAME_STATES.PAUSED]: {
+                [GAME_STATES.PLAYING]: true,
+                [GAME_STATES.START]: true,
+                [GAME_STATES.GAME_OVER]: true
+            },
+            [GAME_STATES.GAME_OVER]: {
+                [GAME_STATES.START]: true,
+                [GAME_STATES.PLAYING]: true // Direct restart
+            }
+        };
+    }
+
+    defineStateHandlers() {
+        return {
+            [GAME_STATES.LOADING]: {
+                enter: () => {
+                    console.log('🔄 Entering LOADING state');
+                    this.stateData.loadingStartTime = Date.now();
+                },
+                update: () => {
+                    // Loading logic handled elsewhere
+                },
+                render: () => {
+                    showLoadingScreen(loadingProgress);
+                },
+                exit: () => {
+                    console.log('✅ Exiting LOADING state');
+                }
+            },
+            [GAME_STATES.START]: {
+                enter: () => {
+                    console.log('🎮 Entering START state');
+                    this.stateData.showInstructions = true;
+                },
+                update: () => {
+                    // Wait for user input
+                },
+                render: () => {
+                    drawScreen('Stardust Drifter', 'Click and drag to launch your ship', 'Press any key to start');
+                },
+                exit: () => {
+                    console.log('🚀 Exiting START state');
+                    this.stateData.showInstructions = false;
+                }
+            },
+            [GAME_STATES.LEVEL_TRANSITION]: {
+                enter: () => {
+                    console.log(`🌟 Entering LEVEL_TRANSITION state (Level ${game.currentLevel})`);
+                    this.stateData.transitionStartTime = Date.now();
+                    this.stateData.transitionDuration = LEVEL_TRANSITION_DELAY;
+                    
+                    // Show level complete effect if transitioning from playing
+                    if (this.previousState === GAME_STATES.PLAYING) {
+                        showLevelCompleteEffect();
+                    }
+                    
+                    setupLevel(); // Generate obstacles for the new level
+                },
+                update: () => {
+                    const elapsed = Date.now() - this.stateData.transitionStartTime;
+                    if (elapsed >= this.stateData.transitionDuration) {
+                        this.transition(GAME_STATES.PLAYING);
+                    }
+                },
+                render: () => {
+                    drawScreen(`Level ${game.currentLevel}`, `Cumulative Score: ${game.score}`, 'Prepare for the next level...');
+                },
+                exit: () => {
+                    console.log('⚡ Exiting LEVEL_TRANSITION state');
+                }
+            },
+            [GAME_STATES.PLAYING]: {
+                enter: () => {
+                    console.log('🎯 Entering PLAYING state');
+                    if (this.previousState === GAME_STATES.START) {
+                        setupLevel();
+                    }
+                    this.stateData.playStartTime = Date.now();
+                },
+                update: () => {
+                    updatePlanets();
+                    updateComets();
+                    updatePlayer();
+                    spawnCollectableStars();
+                    updateEffects();
+                    checkCollisions();
+                    checkLevelCompletion();
+                },
+                render: () => {
+                    draw();
+                },
+                exit: () => {
+                    console.log('⏸️ Exiting PLAYING state');
+                }
+            },
+            [GAME_STATES.PAUSED]: {
+                enter: () => {
+                    console.log('⏸️ Entering PAUSED state');
+                    this.stateData.pauseStartTime = Date.now();
+                },
+                update: () => {
+                    // Game logic paused, only check for unpause input
+                },
+                render: () => {
+                    // Draw current game state with pause overlay
+                    draw();
+                    drawPauseOverlay();
+                },
+                exit: () => {
+                    console.log('▶️ Exiting PAUSED state');
+                }
+            },
+            [GAME_STATES.GAME_OVER]: {
+                enter: () => {
+                    console.log('💀 Entering GAME_OVER state');
+                    this.stateData.gameOverTime = Date.now();
+                    finalScoreEl.textContent = game.score;
+                    gameOverScreen.style.display = 'flex';
+                    
+                    // Show collision effect at player position
+                    showCollisionEffect(game.player.x, game.player.y, 'normal');
+                    showScreenShake(10, 30);
+                },
+                update: () => {
+                    // Wait for restart input
+                },
+                render: () => {
+                    draw(); // Draw final frame
+                },
+                exit: () => {
+                    console.log('🔄 Exiting GAME_OVER state');
+                    gameOverScreen.style.display = 'none';
+                }
+            }
+        };
+    }
+
+    transition(newState, data = {}) {
+        // Check if transition is valid
+        if (!this.canTransition(newState)) {
+            console.warn(`❌ Invalid transition from ${this.currentState} to ${newState}`);
+            return false;
+        }
+
+        console.log(`🔄 State transition: ${this.currentState} → ${newState}`);
+
+        // Exit current state
+        if (this.stateHandlers[this.currentState]?.exit) {
+            this.stateHandlers[this.currentState].exit();
+        }
+
+        // Update state
+        this.previousState = this.currentState;
+        this.currentState = newState;
+        
+        // Merge any transition data
+        this.stateData = { ...this.stateData, ...data };
+
+        // Enter new state
+        if (this.stateHandlers[this.currentState]?.enter) {
+            this.stateHandlers[this.currentState].enter();
+        }
+
+        return true;
+    }
+
+    canTransition(newState) {
+        return this.transitions[this.currentState]?.[newState] || false;
+    }
+
+    update() {
+        if (this.stateHandlers[this.currentState]?.update) {
+            this.stateHandlers[this.currentState].update();
+        }
+    }
+
+    render() {
+        if (this.stateHandlers[this.currentState]?.render) {
+            this.stateHandlers[this.currentState].render();
+        }
+    }
+
+    getCurrentState() {
+        return this.currentState;
+    }
+
+    getStateData() {
+        return this.stateData;
+    }
+
+    isInState(state) {
+        return this.currentState === state;
+    }
+}
+
+// Global state machine instance
+let gameStateMachine;
+
+// Backward compatibility
+let gameState;
 
 let game = {
     player: {},
@@ -329,9 +568,16 @@ function resizeCanvas() {
 function init() {
     game.score = 0;
     game.currentLevel = 1;
-    gameState = 'START';
     updateScore(game.score);
     gameOverScreen.style.display = 'none';
+    
+    // Initialize state machine if not already done
+    if (!gameStateMachine) {
+        gameStateMachine = new GameStateMachine();
+    }
+    
+    // Transition to start state
+    gameStateMachine.transition(GAME_STATES.START);
 
     game.player = {
         x: canvasWidth / 2,
@@ -359,8 +605,7 @@ function init() {
     gameLoop();
 }
 
-function startLevel() {
-    gameState = 'LEVEL_TRANSITION';
+function setupLevel() {
     game.player.x = canvasWidth / 2;
     game.player.y = canvasHeight / 3;
     game.player.dx = 0;
@@ -372,22 +617,9 @@ function startLevel() {
     if (game.currentLevel >= COMET_START_LEVEL) {
         generateComet();
     }
-
-    setTimeout(() => {
-        if (gameState === 'LEVEL_TRANSITION') { // Ensure we don't start if game was reset
-            gameState = 'PLAYING';
-        }
-    }, LEVEL_TRANSITION_DELAY);
 }
 
-function startGame() {
-    if (gameState === 'START') {
-        gameState = 'PLAYING';
-        generatePlanetsForLevel();
-    } else if (gameState === 'LEVEL_TRANSITION') {
-        gameState = 'PLAYING';
-    }
-}
+
 
 function gameOver() {
     gameState = 'GAME_OVER';
@@ -559,7 +791,7 @@ function checkLevelCompletion() {
     const requiredScore = BASE_SCORE_THRESHOLD * Math.pow(SCORE_THRESHOLD_MULTIPLIER, game.currentLevel - 1);
     if (game.score >= requiredScore) {
         game.currentLevel++;
-        startLevel();
+        gameStateMachine.transition(GAME_STATES.LEVEL_TRANSITION);
     }
 }
 
@@ -675,34 +907,37 @@ function drawScreen(title, subtitle1, subtitle2) {
 // --- GAME LOOP ---
 
 function gameLoop() {
-    switch (gameState) {
-        case 'START':
-            drawScreen('Stardust Drifter', 'Click and drag to launch your ship', 'Press any key to start');
-            break;
-        case 'LEVEL_TRANSITION':
-            drawScreen(`Level ${game.currentLevel}`, `Cumulative Score: ${game.score}`, 'Prepare for the next level...');
-            break;
-        case 'PLAYING':
-            update();
-            draw();
-            break;
-        case 'GAME_OVER':
-            draw(); // Draw the final frame
-            return; // Stop the loop
+    if (!gameStateMachine) {
+        // Fallback if state machine not initialized
+        requestAnimationFrame(gameLoop);
+        return;
     }
-    animationFrameId = requestAnimationFrame(gameLoop);
+    
+    // Update current state
+    gameStateMachine.update();
+    
+    // Render current state
+    gameStateMachine.render();
+    
+    // Continue loop unless in GAME_OVER state
+    if (!gameStateMachine.isInState(GAME_STATES.GAME_OVER)) {
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
 }
 
 
 // --- EVENT LISTENERS ---
 
 function handleMouseDown(e) {
-    if (gameState !== 'PLAYING') {
-        if (gameState === 'START' || gameState === 'LEVEL_TRANSITION') {
-            startGame();
-        }
+    if (gameStateMachine.isInState(GAME_STATES.START) || gameStateMachine.isInState(GAME_STATES.LEVEL_TRANSITION)) {
+        gameStateMachine.transition(GAME_STATES.PLAYING);
         return;
     }
+
+    if (!gameStateMachine.isInState(GAME_STATES.PLAYING)) {
+        return;
+    }
+
     isDragging = true;
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -733,8 +968,14 @@ function handleMouseUp(e) {
 }
 
 function handleKeyDown(e) {
-    if (gameState === 'START' || gameState === 'LEVEL_TRANSITION') {
-        startGame();
+    if (gameStateMachine.isInState(GAME_STATES.START) || gameStateMachine.isInState(GAME_STATES.LEVEL_TRANSITION)) {
+        gameStateMachine.transition(GAME_STATES.PLAYING);
+    } else if (gameStateMachine.isInState(GAME_STATES.PLAYING) && (e.key === 'Escape' || e.key === ' ')) {
+        // Toggle pause
+        gameStateMachine.transition(GAME_STATES.PAUSED);
+    } else if (gameStateMachine.isInState(GAME_STATES.PAUSED) && (e.key === 'Escape' || e.key === ' ')) {
+        // Resume game
+        gameStateMachine.transition(GAME_STATES.PLAYING);
     }
 }
 
@@ -1003,7 +1244,12 @@ function gameLoadingLoop() {
     }
 }
 
-// --- INITIALIZATION ---
+// --- SETUP STATE MACHINE ---
+
+function setupStateMachine() {
+    gameStateMachine = new GameStateMachine();
+    gameStateMachine.transition(GAME_STATES.START); // Start the game
+}
 resizeCanvas();
 
 // Start loading screen
