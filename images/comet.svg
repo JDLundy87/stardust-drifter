@@ -1,1 +1,14 @@
-<svg viewBox='0 0 100 50' xmlns='http://www.w3.org/2000/svg'><defs><radialGradient id='grad1' cx='50%' cy='50%' r='50%' fx='50%' fy='50%'><stop offset='0%' style='stop-color:rgb(255,255,255);stop-opacity:1' /><stop offset='100%' style='stop-color:rgb(255,255,255);stop-opacity:0' /></radialGradient></defs><ellipse cx='25' cy='25' rx='25' ry='25' fill='url(#grad1)' /><path d='M 25,25 L 100,0 L 100,50 Z' fill='rgba(255,255,255,0.5)' /></svg>
+<svg width="150" height="100" viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="cometHead" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="100%" stop-color="#87CEEB"/>
+    </radialGradient>
+    <linearGradient id="cometTail" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="rgba(200, 240, 255, 0.8)"/>
+      <stop offset="100%" stop-color="rgba(0, 255, 255, 0)"/>
+    </linearGradient>
+  </defs>
+  <path d="M 40,50 C 100,20 140,30 150,30 L 150,70 C 140,70 100,80 40,50 Z" fill="url(#cometTail)"/>
+  <circle cx="40" cy="50" r="20" fill="url(#cometHead)"/>
+</svg>

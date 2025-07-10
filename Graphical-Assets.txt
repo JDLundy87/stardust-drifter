@@ -1,0 +1,39 @@
+### **Asset: Player's Spaceship**
+
+**Prompt:**
+"Create a **Scalable Vector Graphic (SVG)** of a sleek, minimalist spaceship for a 2D top-down space game. The design should be simple and iconic. The ship should be a sharp, triangular or delta-wing shape, primarily white or a very light silver. It should have a single, powerful-looking engine nozzle at the rear that glows with a vibrant cyan or electric blue light, suggesting speed and energy. The overall aesthetic is clean, futuristic, and easily recognizable as the player's ship. The graphic must have a transparent background."
+
+### **Asset: Comet**
+
+**Prompt:**
+"Generate a **Scalable Vector Graphic (SVG)** of a stylized comet for a 2D space game. The comet should have a crystalline, icy-blue head with sharp, geometric facets that hint at its frozen nature. Trailing behind the head should be a dynamic, flowing tail composed of two color layers: an inner layer of bright, glowing white and an outer layer of ethereal, semi-transparent cyan. The tail should curve slightly to give a sense of motion. The style should be vibrant and slightly menacing, but still fit within a futuristic, neon-infused game world. The graphic must have a transparent background."
+
+### **Asset: Planet 1 (Terrestrial/Green)**
+
+**Prompt:**
+"Design a **Scalable Vector Graphic (SVG)** of a cartoonish, terrestrial planet for a 2D space game. The planet should have a rich green landmass with stylized, swirling white clouds partially obscuring it. The ocean should be a deep blue. The planet should have a subtle, light-blue atmospheric glow around its entire circumference to give it depth. The design should be simple, friendly, and inviting. The graphic must have a transparent background."
+
+### **Asset: Planet 2 (Desert/Red)**
+
+**Prompt:**
+"Create a **Scalable Vector Graphic (SVG)** of a desert planet in a simple, stylized manner for a 2D game. The planet's surface should be a mix of deep red and burnt orange tones, suggesting a dry, arid landscape. Include subtle details like a large, faded crater and a polar ice cap made of white or very light grey. A thin, faint atmospheric halo in a pale orange color should encircle the planet. The overall feel should be stark but beautiful. The graphic must have a transparent background."
+
+### **Asset: Planet 3 (Gas Giant/Purple)**
+
+**Prompt:**
+"Generate a **Scalable Vector Graphic (SVG)** of a vibrant gas giant planet for a 2D space game. The primary color should be a deep violet or purple, with swirling bands of lavender, pink, and a touch of dark blue to indicate atmospheric storms and layers. The bands should be smooth and flowing, giving the planet a sense of gaseous movement. There should be no hard edges on the surface, just soft transitions between the colors. The style is colorful and majestic. The graphic must have a transparent background."
+
+### **Asset: Planet 4 (Ice/Light Blue)**
+
+**Prompt:**
+"Design a **Scalable Vector Graphic (SVG)** of a frozen ice planet for a 2D game. The planet's surface should be a very light, almost white, shade of blue. Cover it with a network of slightly darker blue cracks and fissures to represent a frozen, fractured surface. The planet should have a crisp, white glow around its edge to emphasize its cold nature. The design should be clean, simple, and communicate a sense of extreme cold. The graphic must have a transparent background."
+
+### **Asset: Collectable Star**
+
+**Prompt:**
+"Create a **Scalable Vector Graphic (SVG)** of a collectable star item for a game. The star should be a classic five-pointed shape, but with a modern, stylized twist. The body of the star should be a bright, solid gold or yellow color. It should be surrounded by a soft, radiant yellow-white glow to make it look like a valuable and desirable power-up. The design should be simple, iconic, and immediately understandable as a collectable item. The graphic must have a transparent background."
+
+### **Asset: Game Background**
+
+**Prompt:**
+"Create a **Scalable Vector Graphic (SVG)** to be used as a seamless, tiling background for a 2D space game. The background should be a vast expanse of deep space, using a dark navy blue or near-black base color. Scatter tiny, twinkling stars of varying sizes and brightness (white and pale blue) across the canvas. Include a few very faint, ethereal nebulae clouds in soft shades of purple and deep pink in the distance. The overall mood should be calm and infinite, providing a beautiful but non-distracting backdrop for the main game action. The design must be tileable so it can be repeated without visible seams."
